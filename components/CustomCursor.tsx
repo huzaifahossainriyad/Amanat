@@ -1,7 +1,7 @@
 /**
- * CustomCursor Component - Enhanced Version
- * Implements an advanced magnetic cursor with gradient effects, glow, and smooth animations.
- * Creates a premium, unique user experience with multiple visual layers.
+ * CustomCursor Component - 3D Premium Version
+ * Advanced 3D magnetic cursor with depth effects, shadows, and premium animations.
+ * Original mouse pointer is completely hidden.
  */
 
 'use client'
@@ -15,21 +15,17 @@ interface CursorPosition {
 
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null)
-  const trailRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 })
-  const [trailPosition, setTrailPosition] = useState<CursorPosition>({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
   const [isClicking, setIsClicking] = useState(false)
 
   useEffect(() => {
-    // Track mouse movement to update cursor position
+    // Hide original cursor
+    document.body.style.cursor = 'none'
+
+    // Track mouse movement
     const handleMouseMove = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY })
-
-      // Smooth trail effect with delay
-      setTimeout(() => {
-        setTrailPosition({ x: e.clientX, y: e.clientY })
-      }, 50)
 
       // Check if hovering over clickable element
       const target = e.target as HTMLElement
@@ -59,9 +55,7 @@ export function CustomCursor() {
       if (cursorRef.current) {
         cursorRef.current.style.opacity = '0'
       }
-      if (trailRef.current) {
-        trailRef.current.style.opacity = '0'
-      }
+      document.body.style.cursor = 'none'
     }
 
     // Show cursor when entering window
@@ -69,9 +63,7 @@ export function CustomCursor() {
       if (cursorRef.current) {
         cursorRef.current.style.opacity = '1'
       }
-      if (trailRef.current) {
-        trailRef.current.style.opacity = '1'
-      }
+      document.body.style.cursor = 'none'
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -86,91 +78,126 @@ export function CustomCursor() {
       window.removeEventListener('mouseup', handleMouseUp)
       window.removeEventListener('mouseleave', handleMouseLeave)
       window.removeEventListener('mouseenter', handleMouseEnter)
+      document.body.style.cursor = 'auto'
     }
   }, [])
 
   return (
     <>
-      {/* Trail effect - follows cursor with delay */}
-      <div
-        ref={trailRef}
-        className="pointer-events-none fixed z-40 transition-opacity duration-300"
-        style={{
-          left: `${trailPosition.x}px`,
-          top: `${trailPosition.y}px`,
-          transform: `translate(-50%, -50%)`,
-        }}
-      >
-        {/* Trail glow */}
-        <div className="absolute inset-0 w-8 h-8 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-lg" />
-      </div>
-
-      {/* Main cursor */}
+      {/* 3D Custom Cursor */}
       <div
         ref={cursorRef}
-        className={`pointer-events-none fixed z-50 transition-all duration-150 ${
-          isClicking ? 'scale-75' : isHovering ? 'scale-125' : 'scale-100'
-        }`}
+        className="pointer-events-none fixed z-50 transition-all duration-100"
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
-          transform: `translate(-50%, -50%)`,
+          transform: `translate(-50%, -50%) ${
+            isClicking ? 'scale(0.8)' : isHovering ? 'scale(1.3)' : 'scale(1)'
+          }`,
         }}
       >
-        {/* Outer glow ring */}
-        <div className="absolute inset-0 w-8 h-8 border-2 border-primary/60 rounded-full blur-sm" />
+        {/* 3D Shadow Layer */}
+        <div
+          className="absolute inset-0 w-10 h-10 rounded-full"
+          style={{
+            background: 'radial-gradient(circle at 30% 30%, rgba(192, 86, 33, 0.3), transparent)',
+            filter: 'blur(8px)',
+            transform: 'translateY(4px)',
+          }}
+        />
 
-        {/* Main ring with gradient */}
-        <div className="absolute inset-0 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent/50 opacity-30" />
+        {/* Outer 3D Ring with Depth */}
+        <div
+          className="absolute inset-0 w-10 h-10 rounded-full"
+          style={{
+            background: 'linear-gradient(135deg, rgba(192, 86, 33, 0.8), rgba(192, 86, 33, 0.4))',
+            boxShadow: `
+              inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.2),
+              0 8px 16px rgba(192, 86, 33, 0.4),
+              0 0 20px rgba(192, 86, 33, 0.3)
+            `,
+            border: '2px solid rgba(192, 86, 33, 0.9)',
+          }}
+        />
 
-        {/* Solid outer ring */}
-        <div className="absolute inset-0 w-8 h-8 border-2 border-primary rounded-full" />
+        {/* Middle 3D Ring */}
+        <div
+          className="absolute inset-2 w-6 h-6 rounded-full"
+          style={{
+            background: 'linear-gradient(135deg, rgba(72, 187, 120, 0.6), rgba(192, 86, 33, 0.3))',
+            boxShadow: `
+              inset -1px -1px 2px rgba(0, 0, 0, 0.2),
+              inset 1px 1px 2px rgba(255, 255, 255, 0.1),
+              0 4px 8px rgba(72, 187, 120, 0.3)
+            `,
+            border: '1px solid rgba(72, 187, 120, 0.7)',
+          }}
+        />
 
-        {/* Middle accent ring */}
-        <div className="absolute inset-1 w-6 h-6 border border-accent/70 rounded-full" />
+        {/* Inner 3D Sphere */}
+        <div
+          className="absolute inset-3 w-4 h-4 rounded-full"
+          style={{
+            background: 'radial-gradient(circle at 35% 35%, rgba(192, 86, 33, 1), rgba(192, 86, 33, 0.7))',
+            boxShadow: `
+              inset -1px -1px 2px rgba(0, 0, 0, 0.4),
+              inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+              0 2px 4px rgba(192, 86, 33, 0.6)
+            `,
+          }}
+        />
 
-        {/* Inner dot with glow */}
-        <div className="absolute inset-3 w-2 h-2 bg-gradient-to-br from-primary to-accent rounded-full shadow-lg shadow-primary/50" />
+        {/* Highlight on sphere */}
+        <div
+          className="absolute w-1.5 h-1.5 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent)',
+            top: '6px',
+            left: '6px',
+            boxShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+          }}
+        />
 
-        {/* Pulsing center dot */}
-        <div className="absolute inset-3 w-2 h-2 bg-primary rounded-full animate-pulse" />
+        {/* Glow effect */}
+        <div
+          className="absolute inset-0 w-10 h-10 rounded-full"
+          style={{
+            background: `radial-gradient(circle, rgba(192, 86, 33, ${
+              isHovering ? 0.4 : 0.2
+            }), transparent)`,
+            filter: 'blur(6px)',
+          }}
+        />
+
+        {/* Pulsing animation on hover */}
+        {isHovering && (
+          <div
+            className="absolute inset-0 w-10 h-10 rounded-full"
+            style={{
+              border: '2px solid rgba(72, 187, 120, 0.5)',
+              animation: 'pulse-ring 1.5s ease-out infinite',
+            }}
+          />
+        )}
       </div>
 
-      {/* Hover particles effect */}
-      {isHovering && (
-        <>
-          <div
-            className="pointer-events-none fixed z-40 w-1 h-1 bg-accent rounded-full"
-            style={{
-              left: `${position.x + 15}px`,
-              top: `${position.y - 15}px`,
-              opacity: 0.6,
-              animation: 'float 2s ease-in-out infinite',
-            }}
-          />
-          <div
-            className="pointer-events-none fixed z-40 w-1 h-1 bg-primary rounded-full"
-            style={{
-              left: `${position.x - 15}px`,
-              top: `${position.y + 15}px`,
-              opacity: 0.6,
-              animation: 'float 2s ease-in-out infinite 0.5s',
-            }}
-          />
-        </>
-      )}
-
-      {/* CSS animations */}
+      {/* CSS Animations */}
       <style>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px);
-            opacity: 0.6;
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(1);
+            opacity: 1;
           }
-          50% {
-            transform: translateY(-10px);
-            opacity: 0.3;
+          100% {
+            transform: scale(1.5);
+            opacity: 0;
           }
+        }
+
+        /* Hide default cursor everywhere */
+        * {
+          cursor: none !important;
         }
       `}</style>
     </>
