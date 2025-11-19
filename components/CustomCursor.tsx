@@ -1,7 +1,6 @@
 /**
- * CustomCursor Component - Original Style
- * Simple, clean cursor that looks like the original pointer.
- * No animations, just a clean arrow pointer.
+ * CustomCursor Component - Original Windows Cursor
+ * Simple, clean original arrow pointer style
  */
 
 'use client'
@@ -54,29 +53,32 @@ export function CustomCursor() {
 
   return (
     <>
-      {/* Original Style Cursor */}
+      {/* Original Windows Cursor */}
       <div
         ref={cursorRef}
         className="pointer-events-none fixed z-50"
         style={{
-          transform: 'translate(-4px, -4px)',
+          transform: 'translate(-2px, -2px)',
           opacity: 1,
         }}
       >
-        {/* SVG Arrow Pointer - Original Style */}
+        {/* Original arrow pointer */}
         <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Arrow pointer */}
           <path
-            d="M2 2L2 18L8 11L14 18L18 14L11 7L18 2H2Z"
-            fill="#C05621"
-            stroke="#FDFBF7"
-            strokeWidth="0.5"
+            d="M0 0L0 16L4.5 10L10 16L14 12L8.5 6L14 0H0Z"
+            fill="black"
+          />
+          <path
+            d="M0 0L0 16L4.5 10L10 16L14 12L8.5 6L14 0H0Z"
+            fill="white"
+            opacity="0.8"
+            transform="translate(1, 1)"
           />
         </svg>
       </div>
