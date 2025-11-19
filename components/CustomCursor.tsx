@@ -1,7 +1,7 @@
 /**
- * CustomCursor Component - 3D Premium Version
- * Advanced 3D magnetic cursor with depth effects, shadows, and premium animations.
- * Original mouse pointer is completely hidden.
+ * CustomCursor Component - Smooth & Elegant Version
+ * Minimalist cursor design inspired by original pointer with smooth animations.
+ * No lag, optimized performance with requestAnimationFrame.
  */
 
 'use client'
@@ -17,15 +17,22 @@ export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
-  const [isClicking, setIsClicking] = useState(false)
+  const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     // Hide original cursor
+    document.documentElement.style.cursor = 'none'
     document.body.style.cursor = 'none'
 
-    // Track mouse movement
+    let mouseX = 0
+    let mouseY = 0
+    let cursorX = 0
+    let cursorY = 0
+
+    // Track mouse movement with requestAnimationFrame for smooth animation
     const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY })
+      mouseX = e.clientX
+      mouseY = e.clientY
 
       // Check if hovering over clickable element
       const target = e.target as HTMLElement
@@ -40,14 +47,18 @@ export function CustomCursor() {
       setIsHovering(!!isClickable)
     }
 
-    // Handle mouse down
-    const handleMouseDown = () => {
-      setIsClicking(true)
-    }
+    // Smooth animation loop
+    const animate = () => {
+      // Smooth follow with easing
+      cursorX += (mouseX - cursorX) * 0.2
+      cursorY += (mouseY - cursorY) * 0.2
 
-    // Handle mouse up
-    const handleMouseUp = () => {
-      setIsClicking(false)
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${cursorX}px`
+        cursorRef.current.style.top = `${cursorY}px`
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate)
     }
 
     // Hide cursor when leaving window
@@ -55,7 +66,7 @@ export function CustomCursor() {
       if (cursorRef.current) {
         cursorRef.current.style.opacity = '0'
       }
-      document.body.style.cursor = 'none'
+      document.documentElement.style.cursor = 'none'
     }
 
     // Show cursor when entering window
@@ -63,120 +74,76 @@ export function CustomCursor() {
       if (cursorRef.current) {
         cursorRef.current.style.opacity = '1'
       }
-      document.body.style.cursor = 'none'
+      document.documentElement.style.cursor = 'none'
     }
 
     window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mousedown', handleMouseDown)
-    window.addEventListener('mouseup', handleMouseUp)
     window.addEventListener('mouseleave', handleMouseLeave)
     window.addEventListener('mouseenter', handleMouseEnter)
 
+    // Start animation loop
+    animationFrameRef.current = requestAnimationFrame(animate)
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mousedown', handleMouseDown)
-      window.removeEventListener('mouseup', handleMouseUp)
       window.removeEventListener('mouseleave', handleMouseLeave)
       window.removeEventListener('mouseenter', handleMouseEnter)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+      document.documentElement.style.cursor = 'auto'
       document.body.style.cursor = 'auto'
     }
   }, [])
 
   return (
     <>
-      {/* 3D Custom Cursor */}
+      {/* Smooth Custom Cursor */}
       <div
         ref={cursorRef}
-        className="pointer-events-none fixed z-50 transition-all duration-100"
+        className={`pointer-events-none fixed z-50 transition-all duration-150 ${
+          isHovering ? 'scale-125' : 'scale-100'
+        }`}
         style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
           transform: `translate(-50%, -50%) ${
-            isClicking ? 'scale(0.8)' : isHovering ? 'scale(1.3)' : 'scale(1)'
+            isHovering ? 'scale(1.25)' : 'scale(1)'
           }`,
+          opacity: 1,
         }}
       >
-        {/* 3D Shadow Layer */}
-        <div
-          className="absolute inset-0 w-10 h-10 rounded-full"
-          style={{
-            background: 'radial-gradient(circle at 30% 30%, rgba(192, 86, 33, 0.3), transparent)',
-            filter: 'blur(8px)',
-            transform: 'translateY(4px)',
-          }}
-        />
+        {/* Main pointer arrow shape */}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="drop-shadow-lg"
+        >
+          {/* Arrow pointer */}
+          <path
+            d="M3 3L3 20L10 13L17 20L21 16L14 9L21 3H3Z"
+            fill="#C05621"
+            stroke="#FDFBF7"
+            strokeWidth="0.5"
+            strokeLinejoin="round"
+          />
+          {/* Highlight on arrow */}
+          <path
+            d="M5 5L5 12L8 9L12 12L14 10L11 7L14 5H5Z"
+            fill="#E8A76A"
+            opacity="0.6"
+          />
+        </svg>
 
-        {/* Outer 3D Ring with Depth */}
-        <div
-          className="absolute inset-0 w-10 h-10 rounded-full"
-          style={{
-            background: 'linear-gradient(135deg, rgba(192, 86, 33, 0.8), rgba(192, 86, 33, 0.4))',
-            boxShadow: `
-              inset -2px -2px 4px rgba(0, 0, 0, 0.3),
-              inset 2px 2px 4px rgba(255, 255, 255, 0.2),
-              0 8px 16px rgba(192, 86, 33, 0.4),
-              0 0 20px rgba(192, 86, 33, 0.3)
-            `,
-            border: '2px solid rgba(192, 86, 33, 0.9)',
-          }}
-        />
-
-        {/* Middle 3D Ring */}
-        <div
-          className="absolute inset-2 w-6 h-6 rounded-full"
-          style={{
-            background: 'linear-gradient(135deg, rgba(72, 187, 120, 0.6), rgba(192, 86, 33, 0.3))',
-            boxShadow: `
-              inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-              inset 1px 1px 2px rgba(255, 255, 255, 0.1),
-              0 4px 8px rgba(72, 187, 120, 0.3)
-            `,
-            border: '1px solid rgba(72, 187, 120, 0.7)',
-          }}
-        />
-
-        {/* Inner 3D Sphere */}
-        <div
-          className="absolute inset-3 w-4 h-4 rounded-full"
-          style={{
-            background: 'radial-gradient(circle at 35% 35%, rgba(192, 86, 33, 1), rgba(192, 86, 33, 0.7))',
-            boxShadow: `
-              inset -1px -1px 2px rgba(0, 0, 0, 0.4),
-              inset 1px 1px 2px rgba(255, 255, 255, 0.3),
-              0 2px 4px rgba(192, 86, 33, 0.6)
-            `,
-          }}
-        />
-
-        {/* Highlight on sphere */}
-        <div
-          className="absolute w-1.5 h-1.5 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent)',
-            top: '6px',
-            left: '6px',
-            boxShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
-          }}
-        />
-
-        {/* Glow effect */}
-        <div
-          className="absolute inset-0 w-10 h-10 rounded-full"
-          style={{
-            background: `radial-gradient(circle, rgba(192, 86, 33, ${
-              isHovering ? 0.4 : 0.2
-            }), transparent)`,
-            filter: 'blur(6px)',
-          }}
-        />
-
-        {/* Pulsing animation on hover */}
+        {/* Hover glow effect */}
         {isHovering && (
           <div
-            className="absolute inset-0 w-10 h-10 rounded-full"
+            className="absolute inset-0 w-6 h-6 rounded-full"
             style={{
-              border: '2px solid rgba(72, 187, 120, 0.5)',
-              animation: 'pulse-ring 1.5s ease-out infinite',
+              background: 'radial-gradient(circle, rgba(72, 187, 120, 0.3), transparent)',
+              filter: 'blur(4px)',
+              animation: 'pulse 1.5s ease-in-out infinite',
             }}
           />
         )}
@@ -184,19 +151,23 @@ export function CustomCursor() {
 
       {/* CSS Animations */}
       <style>{`
-        @keyframes pulse-ring {
-          0% {
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.3;
             transform: scale(1);
-            opacity: 1;
           }
-          100% {
-            transform: scale(1.5);
-            opacity: 0;
+          50% {
+            opacity: 0.6;
+            transform: scale(1.2);
           }
         }
 
         /* Hide default cursor everywhere */
         * {
+          cursor: none !important;
+        }
+
+        html, body {
           cursor: none !important;
         }
       `}</style>
