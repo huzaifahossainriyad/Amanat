@@ -1,72 +1,27 @@
 /**
- * CustomCursor Component - Smooth & Elegant Version
- * Minimalist cursor design inspired by original pointer with smooth animations.
- * No lag, optimized performance with requestAnimationFrame.
+ * CustomCursor Component - Original Style
+ * Simple, clean cursor that looks like the original pointer.
+ * No animations, just a clean arrow pointer.
  */
 
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
-interface CursorPosition {
-  x: number
-  y: number
-}
+import { useEffect, useRef } from 'react'
 
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null)
-  const [position, setPosition] = useState<CursorPosition>({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
-  const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     // Hide original cursor
     document.documentElement.style.cursor = 'none'
     document.body.style.cursor = 'none'
 
-    let mouseX = 0
-    let mouseY = 0
-    let cursorX = 0
-    let cursorY = 0
-
-    // Track mouse movement with requestAnimationFrame for smooth animation
+    // Track mouse movement
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX
-      mouseY = e.clientY
-
-      // Check if hovering over clickable element
-      const target = e.target as HTMLElement
-      const isClickable =
-        target.tagName === 'BUTTON' ||
-        target.tagName === 'A' ||
-        target.closest('button') ||
-        target.closest('a') ||
-        target.closest('[role="button"]') ||
-        target.classList.contains('cursor-pointer')
-
-      setIsHovering(!!isClickable)
-    }
-
-    // Smooth animation loop
-    const animate = () => {
-      // Smooth follow with easing
-      cursorX += (mouseX - cursorX) * 0.2
-      cursorY += (mouseY - cursorY) * 0.2
-
       if (cursorRef.current) {
-        cursorRef.current.style.left = `${cursorX}px`
-        cursorRef.current.style.top = `${cursorY}px`
+        cursorRef.current.style.left = `${e.clientX}px`
+        cursorRef.current.style.top = `${e.clientY}px`
       }
-
-      animationFrameRef.current = requestAnimationFrame(animate)
-    }
-
-    // Hide cursor when leaving window
-    const handleMouseLeave = () => {
-      if (cursorRef.current) {
-        cursorRef.current.style.opacity = '0'
-      }
-      document.documentElement.style.cursor = 'none'
     }
 
     // Show cursor when entering window
@@ -77,20 +32,21 @@ export function CustomCursor() {
       document.documentElement.style.cursor = 'none'
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseleave', handleMouseLeave)
-    window.addEventListener('mouseenter', handleMouseEnter)
+    // Hide cursor when leaving window
+    const handleMouseLeave = () => {
+      if (cursorRef.current) {
+        cursorRef.current.style.opacity = '0'
+      }
+    }
 
-    // Start animation loop
-    animationFrameRef.current = requestAnimationFrame(animate)
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseenter', handleMouseEnter)
+    window.addEventListener('mouseleave', handleMouseLeave)
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseleave', handleMouseLeave)
       window.removeEventListener('mouseenter', handleMouseEnter)
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
+      window.removeEventListener('mouseleave', handleMouseLeave)
       document.documentElement.style.cursor = 'auto'
       document.body.style.cursor = 'auto'
     }
@@ -98,75 +54,38 @@ export function CustomCursor() {
 
   return (
     <>
-      {/* Smooth Custom Cursor */}
+      {/* Original Style Cursor */}
       <div
         ref={cursorRef}
-        className={`pointer-events-none fixed z-50 transition-all duration-150 ${
-          isHovering ? 'scale-125' : 'scale-100'
-        }`}
+        className="pointer-events-none fixed z-50"
         style={{
-          transform: `translate(-50%, -50%) ${
-            isHovering ? 'scale(1.25)' : 'scale(1)'
-          }`,
+          transform: 'translate(-4px, -4px)',
           opacity: 1,
         }}
       >
-        {/* Main pointer arrow shape */}
+        {/* SVG Arrow Pointer - Original Style */}
         <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-lg"
         >
           {/* Arrow pointer */}
           <path
-            d="M3 3L3 20L10 13L17 20L21 16L14 9L21 3H3Z"
+            d="M2 2L2 18L8 11L14 18L18 14L11 7L18 2H2Z"
             fill="#C05621"
             stroke="#FDFBF7"
             strokeWidth="0.5"
-            strokeLinejoin="round"
-          />
-          {/* Highlight on arrow */}
-          <path
-            d="M5 5L5 12L8 9L12 12L14 10L11 7L14 5H5Z"
-            fill="#E8A76A"
-            opacity="0.6"
           />
         </svg>
-
-        {/* Hover glow effect */}
-        {isHovering && (
-          <div
-            className="absolute inset-0 w-6 h-6 rounded-full"
-            style={{
-              background: 'radial-gradient(circle, rgba(72, 187, 120, 0.3), transparent)',
-              filter: 'blur(4px)',
-              animation: 'pulse 1.5s ease-in-out infinite',
-            }}
-          />
-        )}
       </div>
 
-      {/* CSS Animations */}
+      {/* CSS to hide default cursor */}
       <style>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.6;
-            transform: scale(1.2);
-          }
-        }
-
-        /* Hide default cursor everywhere */
         * {
           cursor: none !important;
         }
-
         html, body {
           cursor: none !important;
         }
