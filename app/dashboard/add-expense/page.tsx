@@ -1,12 +1,11 @@
 /**
  * Add Expense Page
  * Form for recording daily expenses.
- * Includes category selection and optional notes.
  */
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -17,16 +16,15 @@ import { createClient } from '@/lib/supabase'
 import { AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
 
 const EXPENSE_CATEGORIES = [
-  'Food & Groceries',
-  'Transportation',
-  'Utilities',
-  'Entertainment',
-  'Healthcare',
-  'Education',
-  'Shopping',
-  'Dining Out',
-  'Subscriptions',
-  'Other',
+  'খাদ্য',
+  'পরিবহন',
+  'স্বাস্থ্য',
+  'শিক্ষা',
+  'বিনোদন',
+  'ইউটিলিটি',
+  'কেনাকাটা',
+  'রেস্তোরাঁ',
+  'অন্যান্য',
 ]
 
 export default function AddExpensePage() {
@@ -34,17 +32,31 @@ export default function AddExpensePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Get current user
+    const getUser = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+      } else {
+        router.push('/auth/login')
+      }
+    }
+    getUser()
+  }, [router])
 
   const [formData, setFormData] = useState({
+    title: '',
     amount: '',
-    category: 'Food & Groceries',
-    description: '',
+    category: 'খাদ্য',
     date: new Date().toISOString().split('T')[0],
-    notes: '',
   })
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -59,11 +71,17 @@ export default function AddExpensePage() {
     setLoading(true)
 
     try {
+      if (!userId) {
+        setError('ব্যবহারকারী প্রমাণীকৃত নয়')
+        setLoading(false)
+        return
+      }
+
       const supabase = createClient()
 
       // Validate form
-      if (!formData.amount) {
-        setError('Please enter an amount')
+      if (!formData.title || !formData.amount) {
+        setError('অনুগ্রহ করে সব প্রয়োজনীয় ফিল্ড পূরণ করুন')
         setLoading(false)
         return
       }
@@ -71,16 +89,17 @@ export default function AddExpensePage() {
       // Insert expense record
       const { error: insertError } = await supabase.from('expenses').insert([
         {
+          user_id: userId,
+          title: formData.title,
           amount: parseFloat(formData.amount),
           category: formData.category,
-          description: formData.description,
           date: formData.date,
-          notes: formData.notes || null,
         },
       ])
 
       if (insertError) {
-        setError(insertError.message)
+        console.error('Insert error:', insertError)
+        setError(`ত্রুটি: ${insertError.message}`)
         return
       }
 
@@ -89,7 +108,7 @@ export default function AddExpensePage() {
         router.push('/dashboard')
       }, 2000)
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.')
+      setError('একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। আবার চেষ্টা করুন।')
       console.error('Error adding expense:', err)
     } finally {
       setLoading(false)
@@ -105,21 +124,21 @@ export default function AddExpensePage() {
           {/* Back Button */}
           <Link href="/dashboard" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            ড্যাশবোর্ডে ফিরুন
           </Link>
 
           <Card className="p-8 border border-border">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Add Expense</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">খরচ যোগ করুন</h1>
             <p className="text-muted-foreground mb-6">
-              Record a new daily expense to track your spending.
+              আপনার দৈনিক খরচ রেকর্ড করুন এবং ট্র্যাক করুন।
             </p>
 
             {success && (
               <div className="mb-6 p-4 bg-accent/10 border border-accent rounded-lg flex gap-3">
                 <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-accent">Expense recorded successfully!</p>
-                  <p className="text-sm text-muted-foreground">Redirecting to dashboard...</p>
+                  <p className="font-semibold text-accent">খরচ সফলভাবে যোগ করা হয়েছে!</p>
+                  <p className="text-sm text-muted-foreground">ড্যাশবোর্ডে পুনর্নির্দেশিত হচ্ছে...</p>
                 </div>
               </div>
             )}
@@ -132,10 +151,27 @@ export default function AddExpensePage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  শিরোনাম *
+                </label>
+                <Input
+                  type="text"
+                  name="title"
+                  placeholder="খরচের বিবরণ"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                  className="cursor-pointer"
+                />
+              </div>
+
               {/* Amount */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Amount (USD) *
+                  পরিমাণ (USD) *
                 </label>
                 <Input
                   type="number"
@@ -153,7 +189,7 @@ export default function AddExpensePage() {
               {/* Category */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Category *
+                  বিভাগ
                 </label>
                 <select
                   name="category"
@@ -173,48 +209,15 @@ export default function AddExpensePage() {
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Date *
+                  তারিখ
                 </label>
                 <Input
                   type="date"
                   name="date"
                   value={formData.date}
                   onChange={handleChange}
-                  required
                   disabled={loading}
                   className="cursor-pointer"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Description
-                </label>
-                <Input
-                  type="text"
-                  name="description"
-                  placeholder="What did you spend this on?"
-                  value={formData.description}
-                  onChange={handleChange}
-                  disabled={loading}
-                  className="cursor-pointer"
-                />
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Additional Notes
-                </label>
-                <textarea
-                  name="notes"
-                  placeholder="Any additional details..."
-                  value={formData.notes}
-                  onChange={handleChange}
-                  disabled={loading}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                 />
               </div>
 
@@ -222,10 +225,10 @@ export default function AddExpensePage() {
               <div className="flex gap-4">
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !userId}
                   className="flex-1 bg-primary hover:bg-primary/90 cursor-pointer"
                 >
-                  {loading ? 'Recording Expense...' : 'Record Expense'}
+                  {loading ? 'খরচ যোগ করা হচ্ছে...' : 'খরচ যোগ করুন'}
                 </Button>
                 <Link href="/dashboard" className="flex-1">
                   <Button
@@ -234,7 +237,7 @@ export default function AddExpensePage() {
                     className="w-full cursor-pointer"
                     disabled={loading}
                   >
-                    Cancel
+                    বাতিল করুন
                   </Button>
                 </Link>
               </div>
